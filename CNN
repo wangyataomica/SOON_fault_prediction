@@ -1,0 +1,45 @@
+#######################
+## created by mica
+#######################
+
+import tensorflow as tf
+
+
+input_channels = 1;
+conv1_features = 25;
+conv2_features = 50;
+max_pool1_size = 2;
+max_pool2_size = 2;
+full1_connected_size = 100
+image_width = 28
+image_height = 28
+
+conv1_weights = tf.Variable(tf.truncated_normal([4,4,input_channels,conv1_features],stddev=0.1,dtype = tf.float32))
+conv1_bias = tf.Variable(tf.zeros(conv1_features),dtype=tf.float32)
+
+conv2_weights = tf.Variable(tf.truncated_normal([4,4,conv1_features,conv2_features],stddev=0.1,dtype=tf.float32))
+conv2_bias = tf.Variable(tf.zeros([conv2_features],dtype=tf.float32))
+
+convresult_width = image_width // (max_pool1_size*max_pool2_size)
+convresult_height = image_height // (max_pool1_size*max_pool2_size)
+full1_input_size = convresult_height*convresult_width*conv2_features
+full1_weights = tf.Variable(tf.truncated_normal([full1_input_size,full1_connected_size],stddev=0.1,dtype=tf.float32))
+full1_bias = tf.Variable(tf.truncated_normal([full1_connected_size],stddev=0.1,dtype=tf.float32))
+full2_weights = tf.Variable
+
+
+
+def CNN(input_data):
+    conv1 = tf.nn.conv2d(input_data,conv1_weights,[1,1,1,1],padding="SAME",name="conv1")
+    relu1 = tf.nn.relu(tf.nn.bias_add(conv1,conv1_bias))
+    max_pool1 = tf.nn.max_pool(relu1,ksize=[1,max_pool1_size,max_pool1_size,1],strides=[1,max_pool1_size,max_pool1_size,1],padding="SAME",name="max_pool1")
+
+    conv2 = tf.nn.conv2d(max_pool1,conv2_weights,[1,1,1,1],padding="SAME",name="conv2")
+    relu2 = tf.nn.relu(tf.nn.bias_add(conv2,conv2_bias))
+    max_pool2 = tf.nn.max_pool(relu2,[1,max_pool2_size,max_pool2_size,1],strides=[1,max_pool2_size,max_pool2_size,1],padding="SAME",name="max_pool2")
+
+    final_conv_shape = max_pool2.get_shape().as_list()
+    final_shape = final_conv_shape[1]*final_conv_shape[2]*final_conv_shape[3]
+    flat_output = tf.reshape(max_pool2,[final_conv_shape[0],final_shape])
+
+    fully_connect1 = tf.nn.relu(tf.add(tf.matmul(flat_output,full1_weights),full1_bias))
